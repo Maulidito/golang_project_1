@@ -69,3 +69,4 @@ go.work
 
 .env
 test/
+assets/images
