@@ -4,11 +4,8 @@ import (
 	"log"
 
 	"github.com/Maulidito/personal_project_go/app/database"
-	"github.com/Maulidito/personal_project_go/controller"
-	"github.com/Maulidito/personal_project_go/dataservice"
-	"github.com/Maulidito/personal_project_go/middleware"
+	"github.com/Maulidito/personal_project_go/container"
 	"github.com/Maulidito/personal_project_go/models"
-	"github.com/Maulidito/personal_project_go/service"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -28,19 +25,10 @@ func main() {
 
 	app := fiber.New()
 
-	cartDataService := dataservice.NewDataServiceCart()
-	productDataService := dataservice.NewDataServiceProduct()
-	transactionDataService := dataservice.NewDataServiceTransaction()
-	userDataService := dataservice.NewDataServiceUser()
-
-	middlewareAuth := middleware.NewJwtAuthMiddleware(userDataService, db)
-
-	serviceAuth := service.NewServiceAuth(userDataService, db)
-
-	controllerProduct := controller.NewControllerProduct(productDataService, db, userDataService, middlewareAuth)
-	controllerUser := controller.NewControllerUser(userDataService, db, serviceAuth, middlewareAuth)
-	controllerTransaction := controller.NewControllerTransaction(transactionDataService, db, middlewareAuth, cartDataService)
-	controllerCart := controller.NewControllerCart(cartDataService, db, middlewareAuth)
+	controllerProduct := container.InitializedControllerProduct(db)
+	controllerUser := container.InitializedControllerUser(db)
+	controllerTransaction := container.InitializedControllerTrans(db)
+	controllerCart := container.InitializedControllerCart(db)
 
 	appGroup := app.Group("/api")
 
