@@ -9,7 +9,7 @@ import (
 )
 
 type ControllerCart struct {
-	cartDataService dataservice.IDataService[models.Cart]
+	cartDataService *dataservice.DataServiceCart
 	db              *gorm.DB
 	middlewareAuth  *middleware.JwtAuthMiddleware
 }
@@ -17,13 +17,14 @@ type ControllerCart struct {
 func (ctrl *ControllerCart) MountRouter(c fiber.Router) {
 	routerGroup := c.Group("/cart")
 	routerGroup.Get("/", ctrl.GetAll)
+	routerGroup.Get("/:userId", ctrl.GetOne)
 	routerGroup.Post("/", ctrl.middlewareAuth.Authentication, ctrl.Add)
 	routerGroup.Patch("/:cartId", ctrl.middlewareAuth.Authentication, ctrl.Update)
 	routerGroup.Delete("/:cartId", ctrl.middlewareAuth.Authentication, ctrl.Delete)
 
 }
 
-func NewControllerCart(dataServiceProd dataservice.IDataService[models.Cart], db *gorm.DB, midAuth *middleware.JwtAuthMiddleware) IController {
+func NewControllerCart(dataServiceProd *dataservice.DataServiceCart, db *gorm.DB, midAuth *middleware.JwtAuthMiddleware) IController {
 	return &ControllerCart{cartDataService: dataServiceProd, db: db, middlewareAuth: midAuth}
 }
 
@@ -40,7 +41,19 @@ func (ctrl *ControllerCart) GetAll(c *fiber.Ctx) error {
 }
 
 func (ctrl *ControllerCart) GetOne(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	userId, err := c.ParamsInt("userId")
+	if err != nil {
+		return fiber.ErrBadGateway
+	}
+
+	listCart, err := ctrl.cartDataService.GetAllByUser(c, ctrl.db, userId)
+	if err != nil {
+		return fiber.ErrInternalServerError
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": listCart,
+	})
+
 }
 
 func (ctrl *ControllerCart) Add(c *fiber.Ctx) error {

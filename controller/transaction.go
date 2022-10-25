@@ -18,6 +18,7 @@ type ControllerTransaction struct {
 func (ctrl *ControllerTransaction) MountRouter(c fiber.Router) {
 	routerGroup := c.Group("/transaction")
 	routerGroup.Get("/", ctrl.GetAll)
+	routerGroup.Get("/:userId", ctrl.GetOne)
 	routerGroup.Post("/", ctrl.middlewareAuth.Authentication, ctrl.Add)
 	routerGroup.Patch("/:transId", ctrl.middlewareAuth.Authentication, ctrl.Update)
 
@@ -29,19 +30,30 @@ func NewControllerTransaction(dataServiceProd dataservice.IDataService[models.Tr
 }
 
 func (ctrl *ControllerTransaction) GetAll(c *fiber.Ctx) error {
-	listProduct, err := ctrl.transDataService.GetAll(c, ctrl.db)
+	listTrans, err := ctrl.transDataService.GetAll(c, ctrl.db)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data": listProduct,
+		"data": listTrans,
 	})
 
 }
 
 func (ctrl *ControllerTransaction) GetOne(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	userId, err := c.ParamsInt("userId")
+	if err != nil {
+		return fiber.ErrBadGateway
+	}
+	listTrans, err := ctrl.transDataService.GetOne(c, ctrl.db, userId)
+	if err != nil {
+		return fiber.ErrInternalServerError
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": listTrans,
+	})
+
 }
 
 func (ctrl *ControllerTransaction) Add(c *fiber.Ctx) error {
@@ -64,7 +76,6 @@ func (ctrl *ControllerTransaction) Add(c *fiber.Ctx) error {
 
 func (ctrl *ControllerTransaction) Update(c *fiber.Ctx) error {
 	transId, err := c.ParamsInt("transId")
-
 	if err != nil {
 		return fiber.ErrBadGateway
 	}

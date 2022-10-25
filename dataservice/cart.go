@@ -22,7 +22,12 @@ func (dataService *DataServiceCart) GetAll(ctx *fiber.Ctx, db *gorm.DB) (dataRet
 }
 
 func (dataService *DataServiceCart) GetOne(ctx *fiber.Ctx, db *gorm.DB, id int) (data *models.Cart, err error) {
-	db.Where("id = ?", id).Find(&data)
+	db.Where("user_fk = ? AND transaction_fk IS NULL", id).Find(&data)
+	return
+}
+
+func (dataService *DataServiceCart) GetAllByUser(ctx *fiber.Ctx, db *gorm.DB, id int) (data *[]models.Cart, err error) {
+	db.Where("user_fk = ? AND transaction_fk IS NULL", id).Find(&data)
 	return
 }
 

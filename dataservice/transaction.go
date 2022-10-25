@@ -19,7 +19,7 @@ func (dataService *DataServiceTransaction) GetAll(ctx *fiber.Ctx, db *gorm.DB) (
 }
 
 func (dataService *DataServiceTransaction) GetOne(ctx *fiber.Ctx, db *gorm.DB, id int) (data *models.Transaction, err error) {
-	db.Where("id = ?", id).Find(&data)
+	db.Where("user_fk = ?", id).Find(&data)
 	return
 }
 
